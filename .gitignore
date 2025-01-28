@@ -1,0 +1,14 @@
+# Entornos Virtuales
+.venv
+.env
+
+# Base de datos
+db.sqlite3
+
+# Migraciones
+migrations/
+
+# Python
+__pycache__
+__init__.py
+*.pyc
