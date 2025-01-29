@@ -1,13 +1,29 @@
 import uuid
 from django.db import models
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 # Create your models here.
 class Role(models.TextChoices):
   ADMIN = 'ADMIN', 'Administrador'
   USER = 'USER', 'Usuario Comun'
+  
+class CustomUserManager(BaseUserManager):
+  def create_user(self, email, password=None, **extra_fields):
+    if not email:
+      raise ValueError("El correo electrónico debe ser proporcionado")
+    
+    email = self.normalize_email(email)
+    user = self.model(email=email, **extra_fields)
+    user.set_password(password)
+    user.save(using=self._db)
+    return user
 
-class CustomUser(models.Model):
+  def create_superuser(self, email, password=None, **extra_fields):
+    extra_fields.setdefault("role", Role.ADMIN)
+    return self.create_user(email, password, **extra_fields)
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):
   id = models.UUIDField(
     primary_key=True,
     default=uuid.uuid4,
@@ -21,6 +37,10 @@ class CustomUser(models.Model):
     default=Role.USER
   )
   
+  USERNAME_FIELD = 'email'
+  REQUIRED_FIELDS = ['role']
+  
+  objects = CustomUserManager()
+  
   def set_password(self, raw_password):
-    # Encripta la contraseña antes de guardarla
-    self.password = make_password(raw_password)
+    self.password = make_password(raw_password)       # Encripta la contraseña antes de guardarla
