@@ -12,3 +12,6 @@ migrations/
 __pycache__
 __init__.py
 *.pyc
+
+# JS
+node_modules

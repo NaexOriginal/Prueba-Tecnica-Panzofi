@@ -33,8 +33,11 @@ class LoginView(TokenObtainPairView):
       refresh = RefreshToken.for_user(user)
       access_token = refresh.access_token
       
+      role = user.role
+      
       return Response({
         'acces': str(access_token),
-        'refresh': str(refresh)
+        'refresh': str(refresh),
+        'role': str(role)
       }, status = status.HTTP_200_OK)
     return Response(serializer.error, status = status.HTTP_400_BAD_REQUEST)
