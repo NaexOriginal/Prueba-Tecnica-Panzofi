@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework import status
-from .models import CustomUser
+from .models import CustomUser, CustomAccessToken
 from .serializer import CustomUserSerializer, LoginSerializer
 
 # Create your views here.
@@ -31,13 +32,41 @@ class LoginView(TokenObtainPairView):
       user = serializer.validated_data
       
       refresh = RefreshToken.for_user(user)
-      access_token = refresh.access_token
+      access_token = CustomAccessToken.for_user(user)
       
       role = user.role
+      access_token['role'] = role
       
       return Response({
-        'acces': str(access_token),
+        'access': str(access_token),
         'refresh': str(refresh),
         'role': str(role)
       }, status = status.HTTP_200_OK)
     return Response(serializer.error, status = status.HTTP_400_BAD_REQUEST)
+  
+class TokenVerifyView(APIView):
+  permission_classes = [IsAuthenticated] 
+  
+  def post(self, request):
+    try:
+      auth_header = request.headers.get('Authorization')
+      
+      if not auth_header:
+        return Response({ 'error': 'Falta el encabezado de Autorización' }, status = status.HTTP_400_BAD_REQUEST)
+      
+      if not auth_header.startswith('Bearer '):
+        return Response({ 'error': 'Prefijo de Token Invalido' }, status = status.HTTP_400_BAD_REQUEST)
+      
+      access_token = auth_header.split(' ')[1]
+      
+      try: 
+        token = CustomAccessToken(access_token)
+        role = token['role']
+        
+        return Response({ 'role': role }, status = status.HTTP_200_OK)
+      except Exception as e:
+        return Response({ 'error': f'Token inválido: {str(e)}' }, status = status.HTTP_401_UNAUTHORIZED)
+            
+    except Exception as e:
+      return Response({ 'error': str(e) }, status = status.HTTP_401_UNAUTHORIZED)
+      

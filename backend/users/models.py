@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from rest_framework_simplejwt.tokens import AccessToken
 
 # Create your models here.
 class Role(models.TextChoices):
@@ -44,3 +45,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
   
   def set_password(self, raw_password):
     self.password = make_password(raw_password)       # Encripta la contraseña antes de guardarla
+
+class CustomAccessToken(AccessToken):
+  def __init__(self, *args, **kargs):
+    super().__init__(*args, **kargs)
+    self.payload['role'] = self.get('role')

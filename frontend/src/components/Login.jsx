@@ -19,9 +19,9 @@ export const Login = () => {
 
       if (response.status === 200) {
         localStorage.setItem('access_token', response.data.access);
+        localStorage.setItem('refresh_token', response.data.refresh);
 
         const role = response.data.role;
-        console.log(role);
 
         if (role === 'ADMIN') {
           navigate('/admin');
