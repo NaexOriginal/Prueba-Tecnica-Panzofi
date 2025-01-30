@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-from .models import CustomUser, CustomAccessToken
+from django.utils.timezone import now
+from .models import CustomUser, CustomAccessToken, SessionLog, ButtonClick
 from .serializer import CustomUserSerializer, LoginSerializer
 
 # Create your views here.
@@ -23,9 +24,27 @@ class UserListView(APIView):
   
   def get(self, request):
     users = CustomUser.objects.all()
-    serializer = CustomUserSerializer(users, many=True)
-    return Response(serializer.data, status = status.HTTP_200_OK)
-  
+    user_data = []
+    
+    for user in users:
+      last_session = SessionLog.objects.filter(user = user).order_by('-login_time').first()
+      session_duration = last_session.duration if last_session else None
+      
+      button1_clicks = ButtonClick.Objects.filter(user = user, button_number = 1).count()
+      button2_clicks = ButtonClick.Objects.filter(user = user, button_number = 2).count()
+      
+      user_data.append({
+        'id': str(user.id),
+        'email': user.email,
+        'role': user.role,
+        'last_login': last_session.login_time if last_session else None,
+        'session_duration': session_duration,
+        'button1_clicks': button1_clicks,
+        'button2_clicks': button2_clicks
+      })
+      
+    return Response(user_data, status = status.HTTP_200_OK)
+      
 class LoginView(TokenObtainPairView):
   serializer_class = LoginSerializer
   
@@ -41,6 +60,8 @@ class LoginView(TokenObtainPairView):
       role = user.role
       access_token['role'] = role
       
+      SessionLog.objects.create(user = user, login_time = now())
+      
       return Response({
         'access': str(access_token),
         'refresh': str(refresh),
@@ -48,6 +69,31 @@ class LoginView(TokenObtainPairView):
       }, status = status.HTTP_200_OK)
     return Response(serializer.error, status = status.HTTP_400_BAD_REQUEST)
   
+class LogoutView(APIView):
+  permission_classes = [IsAuthenticated]
+  
+  def post(self, request):
+    user = request.user
+    session = SessionLog.objects.filter(user = user, logout_time__isnull = True).last()
+    
+    if session:
+      session.logout_time = now()
+      session.save()
+      
+    return Response({ 'message': 'Cierre de Sesión Exitoso' }, status = status.HTTP_200_OK)
+
+class ButtonClickView(APIView):
+  permission_classes = [IsAuthenticated]
+  
+  def post(self, request):
+    button_number = request.data.get('button_number')
+    
+    if button_number not in [1, 2]:
+      return Response({ 'error': 'Número de bóton no valido' }, status = status.HTTP_400_BAD_REQUEST)
+    
+    ButtonClick.objects.create(user = request.user, button_number = button_number)
+    return Response({ 'message': f'Clic en el botón {button_number} registrado' }, status = status.HTTP_200_OK)
+
 class TokenVerifyView(APIView):
   permission_classes = [IsAuthenticated] 
   

@@ -46,6 +46,22 @@ class CustomUser(AbstractBaseUser):
   def set_password(self, raw_password):
     self.password = make_password(raw_password)       # Encripta la contraseña antes de guardarla
 
+class SessionLog(models.Model):
+  user = models.ForeignKey(CustomUser, on_delete = models.CASCADE)
+  login_time = models.DateTimeField(auto_now_add = True)
+  logout_time = models.DateTimeField(null = True, blank = True)
+  
+  @property
+  def duration(self):
+    if self.login_time:
+      return (self.login_time - self.login_time).total_seconds()
+    return None
+  
+class ButtonClick(models.Model):
+  user = models.ForeignKey(CustomUser, on_delete = models.CASCADE)
+  button_number = models.IntegerField(choices = [(1, 'Botón 1'), (2, 'Botón 2')])
+  click_time = models.DateTimeField(auto_now_add = True)
+
 class CustomAccessToken(AccessToken):
   def __init__(self, *args, **kargs):
     super().__init__(*args, **kargs)
