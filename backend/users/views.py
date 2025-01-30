@@ -1,14 +1,16 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from .models import CustomUser, CustomAccessToken
 from .serializer import CustomUserSerializer, LoginSerializer
 
 # Create your views here.
 class RegisterUserView(APIView):
+  permission_classes = [AllowAny]
+  
   def post(self, request):
     serializer = CustomUserSerializer(data = request.data)
     if serializer.is_valid():
@@ -17,6 +19,8 @@ class RegisterUserView(APIView):
     return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
   
 class UserListView(APIView):
+  permission_classes = [IsAuthenticated]
+  
   def get(self, request):
     users = CustomUser.objects.all()
     serializer = CustomUserSerializer(users, many=True)

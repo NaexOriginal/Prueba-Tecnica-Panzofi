@@ -1,10 +1,12 @@
 import { AdminDashboard } from '../components/admin/AdminDashboard';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useLogout } from '../hooks/useLogout';
 import { useEffect } from 'react';
 
 export const AdminPage = () => {
   const navigate = useNavigate();
+  const logout = useLogout();
   const { isAuthenticated, loading, role } = useAuth();
 
   useEffect(() => {
@@ -24,14 +26,15 @@ export const AdminPage = () => {
 
   return (
     <div>
-      <h1>Admin Dashboard</h1>
-
       { role === 'ADMIN' ? (
-        <AdminDashboard />
+        <div>
+          <h1>Admin Dashboard</h1>
+          <AdminDashboard />
+          <button onClick={logout}>Cerrar Sesión</button>
+        </div>
       ) : (
         <div>No tienes permisos para acceder a esta página</div>
       )}
-      <AdminDashboard />
     </div>
   )
 }

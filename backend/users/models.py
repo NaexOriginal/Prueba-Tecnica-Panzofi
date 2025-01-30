@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from rest_framework_simplejwt.tokens import AccessToken
 
 # Create your models here.
@@ -24,7 +24,7 @@ class CustomUserManager(BaseUserManager):
     extra_fields.setdefault("role", Role.ADMIN)
     return self.create_user(email, password, **extra_fields)
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):
+class CustomUser(AbstractBaseUser):
   id = models.UUIDField(
     primary_key=True,
     default=uuid.uuid4,
