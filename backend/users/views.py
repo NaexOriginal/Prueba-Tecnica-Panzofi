@@ -30,8 +30,8 @@ class UserListView(APIView):
       last_session = SessionLog.objects.filter(user = user).order_by('-login_time').first()
       session_duration = last_session.duration if last_session else None
       
-      button1_clicks = ButtonClick.Objects.filter(user = user, button_number = 1).count()
-      button2_clicks = ButtonClick.Objects.filter(user = user, button_number = 2).count()
+      button1_clicks = ButtonClick.objects.filter(user = user, button_number = 1).count()
+      button2_clicks = ButtonClick.objects.filter(user = user, button_number = 2).count()
       
       user_data.append({
         'id': str(user.id),

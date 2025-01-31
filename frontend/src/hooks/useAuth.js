@@ -19,7 +19,7 @@ export const useAuth = () => {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/users/verify-token/`,
+        `${import.meta.env.VITE_BASE_URL}/users/token/verify/`,
         {},
         {
           headers: {
@@ -40,7 +40,7 @@ export const useAuth = () => {
       if (error.response?.status === 401 && refreshToken) {
         try {
           const response = await axios.post(
-            `${import.meta.env.VITE_BASE_URL}/users/refresh-token/`,
+            `${import.meta.env.VITE_BASE_URL}/users/token/refresh/`,
             { refresh_token: refreshToken }
           );
 
