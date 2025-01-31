@@ -54,7 +54,10 @@ class SessionLog(models.Model):
   @property
   def duration(self):
     if self.logout_time:
-      return (self.logout_time - self.login_time).total_seconds()
+      total_seconds = (self.logout_time - self.login_time).total_seconds()
+      minutes = int(total_seconds // 60)
+      seconds = int(total_seconds % 60)      
+      return f"{minutes} min {seconds} seg" if minutes > 0 else f"{seconds} seg"
     return 'N/A'
   
 class ButtonClick(models.Model):
