@@ -2,7 +2,7 @@ import uuid
 from django.db import models
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 # Create your models here.
 class Role(models.TextChoices):
@@ -53,9 +53,9 @@ class SessionLog(models.Model):
   
   @property
   def duration(self):
-    if self.login_time:
-      return (self.login_time - self.login_time).total_seconds()
-    return None
+    if self.logout_time:
+      return (self.logout_time - self.login_time).total_seconds()
+    return 'N/A'
   
 class ButtonClick(models.Model):
   user = models.ForeignKey(CustomUser, on_delete = models.CASCADE)

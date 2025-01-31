@@ -29,10 +29,12 @@ export const useAuth = () => {
       );
 
       if (response.status === 200) {
+        const role = response.data.role;
+
         setAuth({ 
           isAuthenticated: true,
           loading: false,
-          role: response.data.role 
+          role 
         });
       }
     } catch(error) {
@@ -41,15 +43,21 @@ export const useAuth = () => {
         try {
           const response = await axios.post(
             `${import.meta.env.VITE_BASE_URL}/users/token/refresh/`,
-            { refresh_token: refreshToken }
+            {},
+            {
+              headers: {
+                'Refresh': `Bearer ${refreshToken}`
+              }
+            }
           );
 
           if (response.status === 200) {
             localStorage.setItem('access_token', response.data.access);
+            const role = response.data.role;
             setAuth({
               isAuthenticated: true,
               loading: false,
-              role: response.data.role
+              role
             });
           }
         } catch (refreshError) {

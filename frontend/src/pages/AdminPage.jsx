@@ -1,4 +1,4 @@
-import { AdminDashboard } from '../components/admin/AdminDashboard';
+import { AdminDashboard } from '../components/AdminDashboard';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useLogout } from '../hooks/useLogout';

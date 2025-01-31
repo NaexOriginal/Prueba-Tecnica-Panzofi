@@ -23,6 +23,9 @@ class UserListView(APIView):
   permission_classes = [IsAuthenticated]
   
   def get(self, request):
+    if request.user.role != 'ADMIN':
+      return Response({ 'error': 'No tienes permisos para ver esta lista.' }, status = status.HTTP_403_FORBIDDEN)
+    
     users = CustomUser.objects.all()
     user_data = []
     
@@ -106,7 +109,7 @@ class TokenVerifyView(APIView):
       
       if not auth_header.startswith('Bearer '):
         return Response({ 'error': 'Prefijo de Token Invalido' }, status = status.HTTP_400_BAD_REQUEST)
-      
+          
       access_token = auth_header.split(' ')[1]
       
       try: 
@@ -119,4 +122,26 @@ class TokenVerifyView(APIView):
             
     except Exception as e:
       return Response({ 'error': str(e) }, status = status.HTTP_401_UNAUTHORIZED)
+  
+class TokenRefreshView(APIView):
+  permission_classes = [AllowAny]
+  
+  def post(self, request):    
+    auth_header = request.headers.get('Refresh')
+    
+    if not auth_header:
+      return Response({ 'error': 'Falta el encabezado de Autorización' }, status = status.HTTP_400_BAD_REQUEST)
       
+    if not auth_header.startswith('Bearer '):
+      return Response({ 'error': 'Prefijo de Token Invalido' }, status = status.HTTP_400_BAD_REQUEST)
+    
+    refresh_token = auth_header.split(' ')[1]
+    
+    try:
+      refresh = RefreshToken(refresh_token)
+      new_access_token = str(refresh.access_token)
+      
+      return Response({'acces': new_access_token}, status = status.HTTP_200_OK)
+    except Exception as e:
+      return Response({ 'error': str(e) }, status = status.HTTP_401_UNAUTHORIZED)
+    

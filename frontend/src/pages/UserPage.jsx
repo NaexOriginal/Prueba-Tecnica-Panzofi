@@ -1,12 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useLogout } from '../hooks/useLogout';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export const UserPage = () => {
   const navigate = useNavigate();
   const logout = useLogout();
   const { isAuthenticated, loading, role } = useAuth();
+  const [buttonClicks, setButtonClicks] = useState({ button1: 0, button2: 0 })
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -22,8 +24,26 @@ export const UserPage = () => {
     return <div>No tienes permisos para acceder a esta página.</div>
   }
 
-  const handleButtonClick = (message) => {
-    console.log(message);
+  const handleButtonClick = async(buttonNumber) => {
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/button-click/`,
+        { button_number: buttonNumber },
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          },
+        }
+      );
+
+      setButtonClicks((prev) => ({
+        ...prev,
+        [`button${buttonNumber}`]: prev[`button${buttonNumber}`] + 1,
+      }));
+    } catch (error) {
+      console.error('Error al registar click:', error)
+    }
   }
 
   return (
@@ -34,7 +54,6 @@ export const UserPage = () => {
             <img 
               src="/logo.png"
               alt="Logo Panzofi"
-              sizes="5"
             />
           </div>
 
@@ -42,8 +61,8 @@ export const UserPage = () => {
           <p>Esta es una breve descripción de la aplicación. Aquí puedes incluir el uso de los Botones y el tiempo de registro en la Apliación</p>
 
           <div>
-            <button onClick={() => handleButtonClick('Botón 1 presionado')}>Botón 1</button>
-            <button onClick={() => handleButtonClick('Botón 2 presionado')}>Botón 2</button>
+            <button onClick={() => handleButtonClick(1)}>Botón 1</button>
+            <button onClick={() => handleButtonClick(2)}>Botón 2</button>
           </div>
 
           <div>

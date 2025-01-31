@@ -6,10 +6,12 @@ export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async(e) => {
-    e.preventDefault()
+    e.preventDefault();
+    setLoading(true);
 
     try { 
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login/`, {
@@ -20,10 +22,9 @@ export const Login = () => {
       if (response.status === 200) {
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('refresh_token', response.data.refresh);
+        localStorage.setItem('role', response.data.role);
 
-        const role = response.data.role;
-
-        if (role === 'ADMIN') {
+        if (response.data.role === 'ADMIN') {
           navigate('/admin');
         } else {
           navigate('/user');
