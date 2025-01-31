@@ -38,6 +38,7 @@ $ cp .env.example .env
 # Editar .env con credenciales de base de datos
 
 # Aplicar migraciones
+$ python manage.py makemigrations users
 $ python manage.py migrate
 
 # Ejecutar servidor
